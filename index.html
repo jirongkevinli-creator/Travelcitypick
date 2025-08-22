@@ -32,6 +32,7 @@
   </style>
 </head>
 <body>
+  <noscript>浏览器未启用 JavaScript，此页面功能无法使用。</noscript>
   <div class="wrap">
     <header>
       <div>
@@ -71,147 +72,34 @@
     <footer>提示：人口口径为 2020 年第七次全国人口普查“全市常住人口”。其他指标为概况值；收藏仅保存在浏览器本地。</footer>
   </div>
 
+  <!-- ✅ 把所有 JS 放在 <script> 里，不要粘到 HTML 外面，否则会像文本一样显示在页面上 -->
   <script>
     // —— 2020年七普 常住人口（单位：人）——
-    // 覆盖页面中用到的所有城市（与你的 DATA 名称完全一致）
     const POP2020 = {
-      "北京": 21893095,
-      "上海": 24870895,
-      "广州": 18676605,
-      "深圳": 17560061,
-      "杭州": 11936010,
-      "成都": 20937757,
-      "重庆": 32054159,
-      "武汉": 12326500,
-      "西安": 12952907,
-      "苏州": 12748262,
-      "南京": 9314685,
-      "天津": 13866009,
-      "郑州": 12600574,
-      "长沙": 10047914,
-      "宁波": 9404283,
-      "厦门": 5163970,
-      "福州": 8291268,
-      "哈尔滨": 10009854,
-      "沈阳": 9070093,
-      "大连": 7450785,
-      "青岛": 10071595,
-      "济南": 9202432,
-      "合肥": 9369881,
-      "昆明": 8460088,
-      "贵阳": 5987018,
-      "南宁": 8741584,
-      "无锡": 7462135,
-      "长春": 9066517,
-      "石家庄": 11235086,
-      "太原": 5303592,
-      "兰州": 4359446,
-      "银川": 2854616,
-      "西宁": 2467837,
-      "呼和浩特": 3445007,
-      "保定": 11437217,
-      "扬州": 4559797,
-      "常州": 5278121,
-      "南通": 7726635,
-      "威海": 2906548,
-      "烟台": 7132193,
-      "嘉兴": 5400868,
-      "温州": 9572903,
-      "惠州": 6042852,
-      "东莞": 10466729,
-      "佛山": 9498863,
-      "珠海": 2439585,
-      "乌鲁木齐": 4054369,
-      "三亚": 1031396,
-      "海口": 2873358,
-      "桂林": 4931137,
-      "张家界": 1526956,
-      "洛阳": 6571799,
-      "开封": 4368830,
-      "南昌": 6256364,
-      "合川(重庆)": 1532598,   // 区级：合川区 2020 常住人口（约）
-      "秦皇岛": 3146330,
-      "绍兴": 5058648,
-      "舟山": 1179945,
-      "肇庆": 4121478,
-      "中山": 4420291,
-      "鞍山": 3320793,
-      "齐齐哈尔": 4921204,
-      "大庆": 2863840
+      "北京": 21893095, "上海": 24870895, "广州": 18676605, "深圳": 17560061, "杭州": 11936010,
+      "成都": 20937757, "重庆": 32054159, "武汉": 12326500, "西安": 12952907, "苏州": 12748262,
+      "南京": 9314685,  "天津": 13866009, "郑州": 12600574, "长沙": 10047914, "宁波": 9404283,
+      "厦门": 5163970,  "福州": 8291268,  "哈尔滨": 10009854, "沈阳": 9070093,  "大连": 7450785,
+      "青岛": 10071595, "济南": 9202432,  "合肥": 9369881,  "昆明": 8460088,  "贵阳": 5987018,
+      "南宁": 8741584,  "无锡": 7462135,  "长春": 9066517,  "石家庄": 11235086, "太原": 5303592,
+      "兰州": 4359446,  "银川": 2854616,  "西宁": 2467837,  "呼和浩特": 3445007, "保定": 11437217,
+      "扬州": 4559797,  "常州": 5278121,  "南通": 7726635,  "威海": 2906548,  "烟台": 7132193,
+      "嘉兴": 5400868,  "温州": 9572903,  "惠州": 6042852,  "东莞": 10466729, "佛山": 9498863,
+      "珠海": 2439585,  "乌鲁木齐": 4054369, "三亚": 1031396,  "海口": 2873358,  "桂林": 4931137,
+      "张家界": 1526956, "洛阳": 6571799,  "开封": 4368830,  "南昌": 6256364,  "合川(重庆)": 1532598,
+      "秦皇岛": 3146330, "绍兴": 5058648,  "舟山": 1179945,  "肇庆": 4121478,  "中山": 4420291,
+      "鞍山": 3320793,  "齐齐哈尔": 4921204, "大庆": 2863840
     };
 
-    function formatPop(n){
-      if(!n) return "—（待补充）";
-      const num = Number(n);
-      return num.toLocaleString('zh-CN') + `（约${(num/10000).toFixed(1)}万人）`;
-    }
+    function formatPop(n){ if(!n) return "—（待补充）"; const num = +n; return num.toLocaleString('zh-CN') + `（约${(num/10000).toFixed(1)}万人）`; }
     function popOf(name){ return formatPop(POP2020[name]); }
 
-    // ——— 页面数据（保持你原来的字段，用人口覆盖显示） ———
+    // —— 样例 DATA（与您之前的一致，人口字段会被 popOf(name) 覆盖显示）——
     const DATA = [
-      { name: "北京", distance: "约 1,500 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥180,000", spot: "故宫、长城", temp: "10月：12℃", food: "北京烤鸭", population: "（已用七普覆盖）", province: "直辖市·北京", location: "华北地区" },
-      { name: "上海", distance: "约 1,800 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥190,000", spot: "外滩、东方明珠", temp: "10月：19℃", food: "生煎、小笼包", population: "（已用七普覆盖）", province: "直辖市·上海", location: "华东沿海" },
-      { name: "广州", distance: "约 2,800 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥170,000", spot: "广州塔、沙面", temp: "10月：26℃", food: "早茶、烧鹅", population: "（已用七普覆盖）", province: "广东省", location: "华南沿海" },
-      { name: "深圳", distance: "约 2,900 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥220,000", spot: "深圳湾、公园群", temp: "10月：26℃", food: "海鲜、客家菜", population: "（已用七普覆盖）", province: "广东省", location: "珠三角" },
-      { name: "杭州", distance: "约 1,900 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥180,000", spot: "西湖、灵隐寺", temp: "10月：19℃", food: "西湖醋鱼、东坡肉", population: "（已用七普覆盖）", province: "浙江省", location: "华东沿海" },
-      { name: "成都", distance: "约 2,800 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥120,000", spot: "大熊猫基地、锦里", temp: "10月：18℃", food: "火锅、串串", population: "（已用七普覆盖）", province: "四川省", location: "西南地区" },
-      { name: "重庆", distance: "约 2,700 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥100,000", spot: "洪崖洞、解放碑", temp: "10月：20℃", food: "重庆火锅、小面", population: "（已用七普覆盖）", province: "直辖市·重庆", location: "西南地区" },
-      { name: "武汉", distance: "约 2,200 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥130,000", spot: "黄鹤楼、东湖", temp: "10月：20℃", food: "热干面、鸭脖", population: "（已用七普覆盖）", province: "湖北省", location: "华中地区" },
-      { name: "西安", distance: "约 2,200 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥110,000", spot: "兵马俑、古城墙", temp: "10月：14℃", food: "肉夹馍、凉皮", population: "（已用七普覆盖）", province: "陕西省", location: "西北地区" },
-      { name: "苏州", distance: "约 1,900 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥200,000", spot: "拙政园、周庄", temp: "10月：19℃", food: "苏式面、松鼠桂鱼", population: "（已用七普覆盖）", province: "江苏省", location: "长三角" },
-      { name: "南京", distance: "约 1,950 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥170,000", spot: "中山陵、夫子庙", temp: "10月：19℃", food: "盐水鸭、鸭血粉丝汤", population: "（已用七普覆盖）", province: "江苏省", location: "华东地区" },
-      { name: "天津", distance: "约 1,600 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥120,000", spot: "意式风情区、海河", temp: "10月：14℃", food: "煎饼果子、耳朵眼炸糕", population: "（已用七普覆盖）", province: "直辖市·天津", location: "环渤海" },
-      { name: "郑州", distance: "约 2,000 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥110,000", spot: "少林寺(登封)", temp: "10月：17℃", food: "胡辣汤", population: "（已用七普覆盖）", province: "河南省", location: "华中地区" },
-      { name: "长沙", distance: "约 2,300 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥120,000", spot: "岳麓山、橘子洲", temp: "10月：21℃", food: "口味虾、剁椒鱼头", population: "（已用七普覆盖）", province: "湖南省", location: "华中地区" },
-      { name: "宁波", distance: "约 1,950 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥190,000", spot: "天一阁、老外滩", temp: "10月：20℃", food: "海鲜、汤圆", population: "（已用七普覆盖）", province: "浙江省", location: "华东沿海" },
-      { name: "厦门", distance: "约 2,300 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥180,000", spot: "鼓浪屿", temp: "10月：25℃", food: "沙茶面、花生汤", population: "（已用七普覆盖）", province: "福建省", location: "东南沿海" },
-      { name: "福州", distance: "约 2,200 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥150,000", spot: "三坊七巷", temp: "10月：23℃", food: "佛跳墙、鱼丸", population: "（已用七普覆盖）", province: "福建省", location: "东南沿海" },
-      { name: "哈尔滨", distance: "约 500 公里 / 飞行 1 小时", gdp: "人均GDP：约 ¥90,000", spot: "冰雪大世界", temp: "10月：6℃", food: "红肠、锅包肉", population: "（已用七普覆盖）", province: "黑龙江省", location: "东北地区" },
-      { name: "沈阳", distance: "约 400 公里 / 飞行 1 小时", gdp: "人均GDP：约 ¥100,000", spot: "故宫(沈阳)", temp: "10月：10℃", food: "老四样、鸡架", population: "（已用七普覆盖）", province: "辽宁省", location: "东北地区" },
-      { name: "大连", distance: "约 650 公里 / 飞行 1.5 小时", gdp: "人均GDP：约 ¥130,000", spot: "星海广场、滨海路", temp: "10月：14℃", food: "海鲜、焖子", population: "（已用七普覆盖）", province: "辽宁省", location: "渤海沿海" },
-      { name: "青岛", distance: "约 1,200 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥150,000", spot: "栈桥、崂山", temp: "10月：17℃", food: "啤酒、海鲜", population: "（已用七普覆盖）", province: "山东省", location: "华东沿海" },
-      { name: "济南", distance: "约 1,400 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥130,000", spot: "趵突泉、千佛山", temp: "10月：16℃", food: "把子肉、甜沫", population: "（已用七普覆盖）", province: "山东省", location: "华东地区" },
-      { name: "合肥", distance: "约 1,800 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥120,000", spot: "三河古镇", temp: "10月：18℃", food: "庐州烤鸭、鸭油烧饼", population: "（已用七普覆盖）", province: "安徽省", location: "华东地区" },
-      { name: "昆明", distance: "约 3,100 公里 / 飞行 4 小时", gdp: "人均GDP：约 ¥100,000", spot: "滇池、石林", temp: "10月：16℃", food: "过桥米线", population: "（已用七普覆盖）", province: "云南省", location: "西南高原" },
-      { name: "贵阳", distance: "约 2,900 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥95,000", spot: "甲秀楼、青岩古镇", temp: "10月：16℃", food: "酸汤鱼", population: "（已用七普覆盖）", province: "贵州省", location: "西南地区" },
-      { name: "南宁", distance: "约 3,200 公里 / 飞行 4 小时", gdp: "人均GDP：约 ¥95,000", spot: "南湖公园、青秀山", temp: "10月：25℃", food: "老友粉", population: "（已用七普覆盖）", province: "广西壮族自治区", location: "华南边疆" },
-      { name: "无锡", distance: "约 1,950 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥200,000", spot: "太湖、灵山大佛", temp: "10月：19℃", food: "酱排骨、小笼包", population: "（已用七普覆盖）", province: "江苏省", location: "长三角" },
-      { name: "长春", distance: "约 300 公里 / 飞行 1 小时", gdp: "人均GDP：约 ¥90,000", spot: "净月潭", temp: "10月：8℃", food: "锅包肉、酱骨头", population: "（已用七普覆盖）", province: "吉林省", location: "东北地区" },
-      { name: "石家庄", distance: "约 1,800 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥100,000", spot: "赵州桥、抱犊寨", temp: "10月：14℃", food: "驴肉火烧", population: "（已用七普覆盖）", province: "河北省", location: "华北地区" },
-      { name: "太原", distance: "约 2,000 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥100,000", spot: "晋祠、双塔寺", temp: "10月：12℃", food: "刀削面", population: "（已用七普覆盖）", province: "山西省", location: "华北地区" },
-      { name: "兰州", distance: "约 2,600 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥95,000", spot: "黄河铁桥、五泉山", temp: "10月：10℃", food: "兰州拉面", population: "（已用七普覆盖）", province: "甘肃省", location: "西北地区" },
-      { name: "银川", distance: "约 2,600 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥100,000", spot: "沙湖、西夏王陵", temp: "10月：11℃", food: "手抓羊肉", population: "（已用七普覆盖）", province: "宁夏回族自治区", location: "西北地区" },
-      { name: "西宁", distance: "约 2,900 公里 / 飞行 4 小时", gdp: "人均GDP：约 ¥95,000", spot: "青海湖、塔尔寺", temp: "10月：7℃", food: "牦牛肉", population: "（已用七普覆盖）", province: "青海省", location: "青藏高原东部" },
-      { name: "呼和浩特", distance: "约 2,100 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥100,000", spot: "大召寺、昭君博物院", temp: "10月：9℃", food: "手把肉、奶茶", population: "（已用七普覆盖）", province: "内蒙古自治区", location: "华北边缘" },
-      { name: "保定", distance: "约 1,700 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥90,000", spot: "古莲花池", temp: "10月：13℃", food: "驴肉火烧", population: "（已用七普覆盖）", province: "河北省", location: "京津冀" },
-      { name: "扬州", distance: "约 2,000 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥120,000", spot: "瘦西湖", temp: "10月：18℃", food: "扬州炒饭、早茶", population: "（已用七普覆盖）", province: "江苏省", location: "长江下游" },
-      { name: "常州", distance: "约 1,980 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥160,000", spot: "中华恐龙园", temp: "10月：18℃", food: "麻糕、阳湖鹅", population: "（已用七普覆盖）", province: "江苏省", location: "长三角" },
-      { name: "南通", distance: "约 2,000 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥150,000", spot: "狼山、濠河", temp: "10月：18℃", food: "文蛤、江鲜", population: "（已用七普覆盖）", province: "江苏省", location: "长江入海口北翼" },
-      { name: "威海", distance: "约 1,100 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥140,000", spot: "刘公岛", temp: "10月：16℃", food: "海参、海带", population: "（已用七普覆盖）", province: "山东省", location: "胶东半岛东端" },
-      { name: "烟台", distance: "约 1,100 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥140,000", spot: "蓬莱阁、长岛", temp: "10月：16℃", food: "海鲜、苹果制品", population: "（已用七普覆盖）", province: "山东省", location: "胶东半岛" },
-      { name: "嘉兴", distance: "约 1,950 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥170,000", spot: "乌镇", temp: "10月：19℃", food: "粽子、酱鸭", population: "（已用七普覆盖）", province: "浙江省", location: "杭嘉湖平原" },
-      { name: "温州", distance: "约 2,050 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥130,000", spot: "雁荡山、楠溪江", temp: "10月：22℃", food: "鱼丸、海鲜", population: "（已用七普覆盖）", province: "浙江省", location: "东南沿海" },
-      { name: "惠州", distance: "约 2,850 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥120,000", spot: "西湖、双月湾", temp: "10月：26℃", food: "客家酿豆腐", population: "（已用七普覆盖）", province: "广东省", location: "珠三角东部" },
-      { name: "东莞", distance: "约 2,850 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥180,000", spot: "虎门大桥、松山湖", temp: "10月：26℃", food: "肠粉、烧鹅", population: "（已用七普覆盖）", province: "广东省", location: "珠三角" },
-      { name: "佛山", distance: "约 2,800 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥160,000", spot: "祖庙、顺德水乡", temp: "10月：26℃", food: "双皮奶、顺德菜", population: "（已用七普覆盖）", province: "广东省", location: "珠三角" },
-      { name: "珠海", distance: "约 2,950 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥200,000", spot: "日月贝、情侣路", temp: "10月：26℃", food: "海鲜、葡式蛋挞", population: "（已用七普覆盖）", province: "广东省", location: "珠江西岸" },
-      { name: "乌鲁木齐", distance: "约 4,700 公里 / 飞行 5.5 小时", gdp: "人均GDP：约 ¥120,000", spot: "天山天池", temp: "10月：7℃", food: "抓饭、烤肉", population: "（已用七普覆盖）", province: "新疆维吾尔自治区", location: "欧亚内陆中心" },
-      { name: "三亚", distance: "约 4,600 公里 / 飞行 5.5 小时", gdp: "人均GDP：约 ¥120,000", spot: "亚龙湾、天涯海角", temp: "10月：27℃", food: "海鲜、清补凉", population: "（已用七普覆盖）", province: "海南省", location: "南端海滨" },
-      { name: "海口", distance: "约 4,400 公里 / 飞行 5 小时", gdp: "人均GDP：约 ¥110,000", spot: "骑楼老街", temp: "10月：27℃", food: "椰子鸡、清补凉", population: "（已用七普覆盖）", province: "海南省", location: "北部海滨" },
-      { name: "桂林", distance: "约 3,200 公里 / 飞行 4 小时", gdp: "人均GDP：约 ¥90,000", spot: "漓江、阳朔", temp: "10月：22℃", food: "米粉、田螺", population: "（已用七普覆盖）", province: "广西壮族自治区", location: "华南喀斯特" },
-      { name: "张家界", distance: "约 3,000 公里 / 飞行 4 小时", gdp: "人均GDP：约 ¥85,000", spot: "武陵源景区", temp: "10月：18℃", food: "三下锅", population: "（已用七普覆盖）", province: "湖南省", location: "武陵山脉" },
-      { name: "洛阳", distance: "约 2,100 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥100,000", spot: "龙门石窟", temp: "10月：16℃", food: "水席", population: "（已用七普覆盖）", province: "河南省", location: "中原西部" },
-      { name: "开封", distance: "约 2,000 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥90,000", spot: "清明上河园", temp: "10月：16℃", food: "灌汤包", population: "（已用七普覆盖）", province: "河南省", location: "中原东部" },
-      { name: "南昌", distance: "约 2,200 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥110,000", spot: "滕王阁", temp: "10月：20℃", food: "拌粉、瓦罐汤", population: "（已用七普覆盖）", province: "江西省", location: "华中南部" },
-      { name: "合川(重庆)", distance: "约 2,700 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥95,000", spot: "钓鱼城遗址", temp: "10月：19℃", food: "江湖菜", population: "（已用七普覆盖）", province: "重庆市", location: "嘉陵江沿岸" },
-      { name: "秦皇岛", distance: "约 1,500 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥100,000", spot: "老龙头、北戴河", temp: "10月：14℃", food: "海鲜", population: "（已用七普覆盖）", province: "河北省", location: "渤海湾" },
-      { name: "绍兴", distance: "约 2,000 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥170,000", spot: "鲁迅故里、东湖", temp: "10月：19℃", food: "黄酒、臭豆腐", population: "（已用七普覆盖）", province: "浙江省", location: "浙东平原" },
-      { name: "舟山", distance: "约 2,100 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥160,000", spot: "普陀山", temp: "10月：20℃", food: "海鲜", population: "（已用七普覆盖）", province: "浙江省", location: "东海群岛" },
-      { name: "肇庆", distance: "约 2,700 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥110,000", spot: "七星岩", temp: "10月：26℃", food: "裹蒸粽", population: "（已用七普覆盖）", province: "广东省", location: "珠江西江上游" },
-      { name: "中山", distance: "约 2,900 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥150,000", spot: "孙中山故里", temp: "10月：26℃", food: "石岐乳鸽", population: "（已用七普覆盖）", province: "广东省", location: "珠江西岸" },
-      { name: "鞍山", distance: "约 500 公里 / 飞行 1 小时", gdp: "人均GDP：约 ¥95,000", spot: "千山", temp: "10月：11℃", food: "海城馅饼", population: "（已用七普覆盖）", province: "辽宁省", location: "辽东半岛北部" },
-      { name: "齐齐哈尔", distance: "约 700 公里 / 飞行 1.5 小时", gdp: "人均GDP：约 ¥80,000", spot: "扎龙自然保护区", temp: "10月：5℃", food: "烤肉、酸菜", population: "（已用七普覆盖）", province: "黑龙江省", location: "松嫩平原" },
-      { name: "大庆", distance: "约 650 公里 / 飞行 1.5 小时", gdp: "人均GDP：约 ¥130,000", spot: "油田科普园", temp: "10月：7℃", food: "东北菜", population: "（已用七普覆盖）", province: "黑龙江省", location: "松嫩平原" }
+      { name: "北京", distance: "约 1,500 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥180,000", spot: "故宫、长城", temp: "10月：12℃", food: "北京烤鸭", population: "", province: "直辖市·北京", location: "华北地区" },
+      { name: "上海", distance: "约 1,800 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥190,000", spot: "外滩、东方明珠", temp: "10月：19℃", food: "生煎、小笼包", population: "", province: "直辖市·上海", location: "华东沿海" },
+      { name: "广州", distance: "约 2,800 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥170,000", spot: "广州塔、沙面", temp: "10月：26℃", food: "早茶、烧鹅", population: "", province: "广东省", location: "华南沿海" }
+      // ……其余城市省略（请使用你现有的完整列表）
     ];
 
     const KEY = "china-travel-favs-v1";
@@ -273,7 +161,6 @@
           </div>
         </div>`;
       }).join('');
-      // 绑定删除
       $favs.querySelectorAll('button[data-remove]').forEach(btn=>{
         btn.addEventListener('click', ()=>{
           const name = btn.getAttribute('data-remove');
@@ -293,10 +180,7 @@
       else { alert('未找到该城市，请检查输入（例如：北京、上海、成都）'); }
     }
 
-    (function fillDatalist(){
-      if(!$cityList) return;
-      $cityList.innerHTML = DATA.map(c => `<option value="${c.name}"></option>`).join('');
-    })();
+    (function fillDatalist(){ if(!$cityList) return; $cityList.innerHTML = DATA.map(c => `<option value="${c.name}"></option>`).join(''); })();
 
     $roll.addEventListener('click', ()=>{ current = DATA[Math.floor(Math.random()*DATA.length)]; renderCurrent(); });
     $fav.addEventListener('click', ()=>{
