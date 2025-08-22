@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>中国旅游推荐（从延吉出发）</title>
+  <style>
+    :root { --bg:#fafbff; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e5e7eb; --accent:#2563eb; }
+    *{ box-sizing:border-box }
+    body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, "Apple Color Emoji","Segoe UI Emoji"; background:var(--bg); color:var(--ink); }
+    .wrap{ max-width:1000px; margin:0 auto; padding:24px; }
+    header{ display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:12px; }
+    h1{ margin:0; font-size:clamp(22px, 3vw, 28px); }
+    p.lead{ color:var(--muted); margin:6px 0 0; }
+    .card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+    .row{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .row > *{ margin:4px 0; }
+    button{ appearance:none; border:1px solid var(--line); background:#fff; color:var(--ink); padding:10px 14px; border-radius:12px; cursor:pointer; font-weight:600; }
+    button.primary{ background:var(--accent); color:#fff; border-color:var(--accent); }
+    button.ghost{ background:transparent; }
+    button:disabled{ opacity:.6; cursor:not-allowed; }
+    input{ width:100%; max-width:360px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; }
+    .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px; }
+    .fav{ border:1px dashed var(--line); border-radius:12px; padding:12px; }
+    .meta{ color:var(--muted); font-size:14px; }
+    .kvs{ margin:8px 0 0; display:grid; grid-template-columns: 140px 1fr; gap:6px 10px; font-size:14px; }
+    .kvs div{ padding:2px 0; }
+    .kvs .key{ color:var(--muted); }
+    .title{ font-weight:700; font-size:18px; }
+    .spacer{ height:8px; }
+    footer{ color:var(--muted); font-size:13px; margin-top:18px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>中国旅游推荐（从延吉出发）</h1>
+        <p class="lead">随机推荐 50 个主要城市之一，显示中文旅行要点。*数据为近似示意*</p>
+      </div>
+      <div class="row">
+        <button id="btn-roll" class="primary">再推荐</button>
+        <button id="btn-fav">收藏</button>
+        <button id="btn-export" class="ghost">导出收藏</button>
+      </div>
+    </header>
+
+    <div class="spacer"></div>
+
+    <section id="current" class="card" aria-live="polite"></section>
+
+    <div class="spacer"></div>
+
+    <div class="row">
+      <input id="search" placeholder="搜索收藏 (例: 北京、上海)" />
+    </div>
+
+    <h3>收藏</h3>
+    <section id="favorites" class="grid" aria-live="polite"></section>
+
+    <footer>提示：以上指标为大致参照，实际数值可能因年份/统计口径有所差异；收藏仅保存在浏览器本地。</footer>
+  </div>
+
+  <script>
+    const DATA = [
+      { name: "北京", distance: "约 1,500 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥180,000", spot: "故宫、长城", temp: "10月：12℃", food: "北京烤鸭", population: "约 2,200 万", province: "直辖市·北京", location: "华北地区" },
+      { name: "上海", distance: "约 1,800 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥190,000", spot: "外滩、东方明珠", temp: "10月：19℃", food: "生煎、小笼包", population: "约 2,500 万", province: "直辖市·上海", location: "华东沿海" },
+      { name: "广州", distance: "约 2,800 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥170,000", spot: "广州塔、沙面", temp: "10月：26℃", food: "早茶、烧鹅", population: "约 1,900 万", province: "广东省", location: "华南沿海" },
+      { name: "深圳", distance: "约 2,900 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥220,000", spot: "深圳湾、公园群", temp: "10月：26℃", food: "海鲜、客家菜", population: "约 1,750 万", province: "广东省", location: "珠三角" },
+      { name: "杭州", distance: "约 1,900 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥180,000", spot: "西湖、灵隐寺", temp: "10月：19℃", food: "西湖醋鱼、东坡肉", population: "约 1,220 万", province: "浙江省", location: "华东沿海" },
+      { name: "成都", distance: "约 2,800 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥120,000", spot: "大熊猫基地、锦里", temp: "10月：18℃", food: "火锅、串串", population: "约 2,100 万", province: "四川省", location: "西南地区" },
+      { name: "重庆", distance: "约 2,700 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥100,000", spot: "洪崖洞、解放碑", temp: "10月：20℃", food: "重庆火锅、小面", population: "约 3,100 万", province: "直辖市·重庆", location: "西南地区" },
+      { name: "武汉", distance: "约 2,200 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥130,000", spot: "黄鹤楼、东湖", temp: "10月：20℃", food: "热干面、鸭脖", population: "约 1,300 万", province: "湖北省", location: "华中地区" },
+      { name: "西安", distance: "约 2,200 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥110,000", spot: "兵马俑、古城墙", temp: "10月：14℃", food: "肉夹馍、凉皮", population: "约 1,300 万", province: "陕西省", location: "西北地区" },
+      { name: "苏州", distance: "约 1,900 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥200,000", spot: "拙政园、周庄", temp: "10月：19℃", food: "苏式面、松鼠桂鱼", population: "约 1,300 万", province: "江苏省", location: "长三角" },
+      { name: "南京", distance: "约 1,950 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥170,000", spot: "中山陵、夫子庙", temp: "10月：19℃", food: "盐水鸭、鸭血粉丝汤", population: "约 950 万", province: "江苏省", location: "华东地区" },
+      { name: "天津", distance: "约 1,600 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥120,000", spot: "意式风情区、海河", temp: "10月：14℃", food: "煎饼果子、耳朵眼炸糕", population: "约 1,380 万", province: "直辖市·天津", location: "环渤海" },
+      { name: "郑州", distance: "约 2,000 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥110,000", spot: "少林寺(登封)", temp: "10月：17℃", food: "胡辣汤", population: "约 1,300 万", province: "河南省", location: "华中地区" },
+      { name: "长沙", distance: "约 2,300 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥120,000", spot: "岳麓山、橘子洲", temp: "10月：21℃", food: "口味虾、剁椒鱼头", population: "约 1,000 万", province: "湖南省", location: "华中地区" },
+      { name: "宁波", distance: "约 1,950 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥190,000", spot: "天一阁、老外滩", temp: "10月：20℃", food: "海鲜、汤圆", population: "约 950 万", province: "浙江省", location: "华东沿海" },
+      { name: "厦门", distance: "约 2,300 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥180,000", spot: "鼓浪屿", temp: "10月：25℃", food: "沙茶面、花生汤", population: "约 500 万", province: "福建省", location: "东南沿海" },
+      { name: "福州", distance: "约 2,200 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥150,000", spot: "三坊七巷", temp: "10月：23℃", food: "佛跳墙、鱼丸", population: "约 800 万", province: "福建省", location: "东南沿海" },
+      { name: "哈尔滨", distance: "约 500 公里 / 飞行 1 小时", gdp: "人均GDP：约 ¥90,000", spot: "冰雪大世界", temp: "10月：6℃", food: "红肠、锅包肉", population: "约 950 万", province: "黑龙江省", location: "东北地区" },
+      { name: "沈阳", distance: "约 400 公里 / 飞行 1 小时", gdp: "人均GDP：约 ¥100,000", spot: "故宫(沈阳)", temp: "10月：10℃", food: "老四样、鸡架", population: "约 920 万", province: "辽宁省", location: "东北地区" },
+      { name: "大连", distance: "约 650 公里 / 飞行 1.5 小时", gdp: "人均GDP：约 ¥130,000", spot: "星海广场、滨海路", temp: "10月：14℃", food: "海鲜、焖子", population: "约 750 万", province: "辽宁省", location: "渤海沿海" },
+      { name: "青岛", distance: "约 1,200 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥150,000", spot: "栈桥、崂山", temp: "10月：17℃", food: "啤酒、海鲜", population: "约 1,000 万", province: "山东省", location: "华东沿海" },
+      { name: "济南", distance: "约 1,400 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥130,000", spot: "趵突泉、千佛山", temp: "10月：16℃", food: "把子肉、甜沫", population: "约 920 万", province: "山东省", location: "华东地区" },
+      { name: "合肥", distance: "约 1,800 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥120,000", spot: "三河古镇", temp: "10月：18℃", food: "庐州烤鸭、鸭油烧饼", population: "约 960 万", province: "安徽省", location: "华东地区" },
+      { name: "昆明", distance: "约 3,100 公里 / 飞行 4 小时", gdp: "人均GDP：约 ¥100,000", spot: "滇池、石林", temp: "10月：16℃", food: "过桥米线", population: "约 850 万", province: "云南省", location: "西南高原" },
+      { name: "贵阳", distance: "约 2,900 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥95,000", spot: "甲秀楼、青岩古镇", temp: "10月：16℃", food: "酸汤鱼", population: "约 600 万", province: "贵州省", location: "西南地区" },
+      { name: "南宁", distance: "约 3,200 公里 / 飞行 4 小时", gdp: "人均GDP：约 ¥95,000", spot: "南湖公园、青秀山", temp: "10月：25℃", food: "老友粉", population: "约 880 万", province: "广西壮族自治区", location: "华南边疆" },
+      { name: "无锡", distance: "约 1,950 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥200,000", spot: "太湖、灵山大佛", temp: "10月：19℃", food: "酱排骨、小笼包", population: "约 750 万", province: "江苏省", location: "长三角" },
+      { name: "长春", distance: "约 300 公里 / 飞行 1 小时", gdp: "人均GDP：约 ¥90,000", spot: "净月潭", temp: "10月：8℃", food: "锅包肉、酱骨头", population: "约 900 万", province: "吉林省", location: "东北地区" },
+      { name: "石家庄", distance: "约 1,800 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥100,000", spot: "赵州桥、抱犊寨", temp: "10月：14℃", food: "驴肉火烧", population: "约 1,100 万", province: "河北省", location: "华北地区" },
+      { name: "太原", distance: "约 2,000 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥100,000", spot: "晋祠、双塔寺", temp: "10月：12℃", food: "刀削面", population: "约 550 万", province: "山西省", location: "华北地区" },
+      { name: "兰州", distance: "约 2,600 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥95,000", spot: "黄河铁桥、五泉山", temp: "10月：10℃", food: "兰州拉面", population: "约 440 万", province: "甘肃省", location: "西北地区" },
+      { name: "银川", distance: "约 2,600 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥100,000", spot: "沙湖、西夏王陵", temp: "10月：11℃", food: "手抓羊肉", population: "约 280 万", province: "宁夏回族自治区", location: "西北地区" },
+      { name: "西宁", distance: "约 2,900 公里 / 飞行 4 小时", gdp: "人均GDP：约 ¥95,000", spot: "青海湖、塔尔寺", temp: "10月：7℃", food: "牦牛肉", population: "约 240 万", province: "青海省", location: "青藏高原东部" },
+      { name: "呼和浩特", distance: "约 2,100 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥100,000", spot: "大召寺、昭君博物院", temp: "10月：9℃", food: "手把肉、奶茶", population: "约 350 万", province: "内蒙古自治区", location: "华北边缘" },
+      { name: "保定", distance: "约 1,700 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥90,000", spot: "古莲花池", temp: "10月：13℃", food: "驴肉火烧", population: "约 1,100 万", province: "河北省", location: "京津冀" },
+      { name: "扬州", distance: "约 2,000 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥120,000", spot: "瘦西湖", temp: "10月：18℃", food: "扬州炒饭、早茶", population: "约 460 万", province: "江苏省", location: "长江下游" },
+      { name: "常州", distance: "约 1,980 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥160,000", spot: "中华恐龙园", temp: "10月：18℃", food: "麻糕、阳湖鹅", population: "约 540 万", province: "江苏省", location: "长三角" },
+      { name: "南通", distance: "约 2,000 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥150,000", spot: "狼山、濠河", temp: "10月：18℃", food: "文蛤、江鲜", population: "约 730 万", province: "江苏省", location: "长江入海口北翼" },
+      { name: "威海", distance: "约 1,100 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥140,000", spot: "刘公岛", temp: "10月：16℃", food: "海参、海带", population: "约 280 万", province: "山东省", location: "胶东半岛东端" },
+      { name: "烟台", distance: "约 1,100 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥140,000", spot: "蓬莱阁、长岛", temp: "10月：16℃", food: "海鲜、苹果制品", population: "约 700 万", province: "山东省", location: "胶东半岛" },
+      { name: "嘉兴", distance: "约 1,950 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥170,000", spot: "乌镇", temp: "10月：19℃", food: "粽子、酱鸭", population: "约 560 万", province: "浙江省", location: "杭嘉湖平原" },
+      { name: "温州", distance: "约 2,050 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥130,000", spot: "雁荡山、楠溪江", temp: "10月：22℃", food: "鱼丸、海鲜", population: "约 950 万", province: "浙江省", location: "东南沿海" },
+      { name: "惠州", distance: "约 2,850 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥120,000", spot: "西湖、双月湾", temp: "10月：26℃", food: "客家酿豆腐", population: "约 600 万", province: "广东省", location: "珠三角东部" },
+      { name: "东莞", distance: "约 2,850 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥180,000", spot: "虎门大桥、松山湖", temp: "10月：26℃", food: "肠粉、烧鹅", population: "约 1,000 万", province: "广东省", location: "珠三角" },
+      { name: "佛山", distance: "约 2,800 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥160,000", spot: "祖庙、顺德水乡", temp: "10月：26℃", food: "双皮奶、顺德菜", population: "约 950 万", province: "广东省", location: "珠三角" },
+      { name: "珠海", distance: "约 2,950 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥200,000", spot: "日月贝、情侣路", temp: "10月：26℃", food: "海鲜、葡式蛋挞", population: "约 250 万", province: "广东省", location: "珠江西岸" },
+      { name: "乌鲁木齐", distance: "约 4,700 公里 / 飞行 5.5 小时", gdp: "人均GDP：约 ¥120,000", spot: "天山天池", temp: "10月：7℃", food: "抓饭、烤肉", population: "约 400 万", province: "新疆维吾尔自治区", location: "欧亚内陆中心" },
+      { name: "三亚", distance: "约 4,600 公里 / 飞行 5.5 小时", gdp: "人均GDP：约 ¥120,000", spot: "亚龙湾、天涯海角", temp: "10月：27℃", food: "海鲜、清补凉", population: "约 120 万", province: "海南省", location: "南端海滨" },
+      { name: "海口", distance: "约 4,400 公里 / 飞行 5 小时", gdp: "人均GDP：约 ¥110,000", spot: "骑楼老街", temp: "10月：27℃", food: "椰子鸡、清补凉", population: "约 280 万", province: "海南省", location: "北部海滨" },
+      { name: "桂林", distance: "约 3,200 公里 / 飞行 4 小时", gdp: "人均GDP：约 ¥90,000", spot: "漓江、阳朔", temp: "10月：22℃", food: "米粉、田螺", population: "约 500 万", province: "广西壮族自治区", location: "华南喀斯特" },
+      { name: "张家界", distance: "约 3,000 公里 / 飞行 4 小时", gdp: "人均GDP：约 ¥85,000", spot: "武陵源景区", temp: "10月：18℃", food: "三下锅", population: "约 160 万", province: "湖南省", location: "武陵山脉" },
+      { name: "洛阳", distance: "约 2,100 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥100,000", spot: "龙门石窟", temp: "10月：16℃", food: "水席", population: "约 700 万", province: "河南省", location: "中原西部" },
+      { name: "开封", distance: "约 2,000 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥90,000", spot: "清明上河园", temp: "10月：16℃", food: "灌汤包", population: "约 500 万", province: "河南省", location: "中原东部" },
+      { name: "南昌", distance: "约 2,200 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥110,000", spot: "滕王阁", temp: "10月：20℃", food: "拌粉、瓦罐汤", population: "约 650 万", province: "江西省", location: "华中南部" },
+      { name: "合川(重庆)", distance: "约 2,700 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥95,000", spot: "钓鱼城遗址", temp: "10月：19℃", food: "江湖菜", population: "约 150 万", province: "重庆市", location: "嘉陵江沿岸" },
+      { name: "秦皇岛", distance: "约 1,500 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥100,000", spot: "老龙头、北戴河", temp: "10月：14℃", food: "海鲜", population: "约 300 万", province: "河北省", location: "渤海湾" },
+      { name: "绍兴", distance: "约 2,000 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥170,000", spot: "鲁迅故里、东湖", temp: "10月：19℃", food: "黄酒、臭豆腐", population: "约 500 万", province: "浙江省", location: "浙东平原" },
+      { name: "舟山", distance: "约 2,100 公里 / 飞行 3 小时", gdp: "人均GDP：约 ¥160,000", spot: "普陀山", temp: "10月：20℃", food: "海鲜", population: "约 110 万", province: "浙江省", location: "东海群岛" },
+      { name: "肇庆", distance: "约 2,700 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥110,000", spot: "七星岩", temp: "10月：26℃", food: "裹蒸粽", population: "约 400 万", province: "广东省", location: "珠江西江上游" },
+      { name: "中山", distance: "约 2,900 公里 / 飞行 3.5 小时", gdp: "人均GDP：约 ¥150,000", spot: "孙中山故里", temp: "10月：26℃", food: "石岐乳鸽", population: "约 440 万", province: "广东省", location: "珠江西岸" },
+      { name: "鞍山", distance: "约 500 公里 / 飞行 1 小时", gdp: "人均GDP：约 ¥95,000", spot: "千山", temp: "10月：11℃", food: "海城馅饼", population: "约 330 万", province: "辽宁省", location: "辽东半岛北部" },
+      { name: "齐齐哈尔", distance: "约 700 公里 / 飞行 1.5 小时", gdp: "人均GDP：约 ¥80,000", spot: "扎龙自然保护区", temp: "10月：5℃", food: "烤肉、酸菜", population: "约 520 万", province: "黑龙江省", location: "松嫩平原" },
+      { name: "大庆", distance: "约 650 公里 / 飞行 1.5 小时", gdp: "人均GDP：约 ¥130,000", spot: "油田科普园", temp: "10月：7℃", food: "东北菜", population: "约 280 万", province: "黑龙江省", location: "松嫩平原" }
+    ];
+
+    const KEY = "china-travel-favs-v1";
+    const $current = document.getElementById('current');
+    const $favs = document.getElementById('favorites');
+    const $roll = document.getElementById('btn-roll');
+    const $fav = document.getElementById('btn-fav');
+    const $export = document.getElementById('btn-export');
+    const $search = document.getElementById('search');
+
+    let current = DATA[Math.floor(Math.random()*DATA.length)];
+    let favorites = [];
+
+    try { const raw = localStorage.getItem(KEY); if (raw) favorites = JSON.parse(raw); } catch {}
+
+    function saveFavs(){ try{ localStorage.setItem(KEY, JSON.stringify(favorites)); }catch{} }
+
+    function renderCurrent(){
+      const isFav = favorites.some(f=>f.name===current.name);
+      $fav.textContent = isFav ? '取消收藏' : '收藏';
+      $current.innerHTML = `
+        <div class="title">推荐城市：${current.name}</div>
+        <div class="kvs">
+          <div class="key">距离/航程</div><div>${current.distance}</div>
+          <div class="key">人均GDP</div><div>${current.gdp}</div>
+          <div class="key">著名景点</div><div>${current.spot}</div>
+          <div class="key">10月平均气温</div><div>${current.temp.replace('10月：','')}</div>
+          <div class="key">著名美食</div><div>${current.food}</div>
+          <div class="key">人口</div><div>${current.population}</div>
+          <div class="key">省份/属性</div><div>${current.province}</div>
+          <div class="key">地理位置</div><div>${current.location}</div>
+        </div>`;
+    }
+
+    function renderFavs(){
+      const q = ($search.value||'').trim();
+      const list = q? favorites.filter(f=>f.name.includes(q)) : favorites;
+      if(!list.length){ $favs.innerHTML = '<div class="meta">暂无收藏或无搜索结果。</div>'; return; }
+      $favs.innerHTML = list.map(c=>`
+        <div class="fav">
+          <div class="title">${c.name}</div>
+          <div class="meta">${c.province}｜${c.location}</div>
+          <div class="kvs">
+            <div class="key">距离/航程</div><div>${c.distance}</div>
+            <div class="key">人均GDP</div><div>${c.gdp}</div>
+            <div class="key">10月</div><div>${c.temp.replace('10月：','')}</div>
+            <div class="key">美食</div><div>${c.food}</div>
+            <div class="key">人口</div><div>${c.population}</div>
+            <div class="key">景点</div><div>${c.spot}</div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button data-remove="${c.name}">删除</button>
+          </div>
+        </div>
+      `).join('');
+      // bind remove
+      $favs.querySelectorAll('button[data-remove]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const name = btn.getAttribute('data-remove');
+          favorites = favorites.filter(f=>f.name!==name);
+          saveFavs();
+          renderFavs();
+          renderCurrent();
+        });
+      });
+    }
+
+    $roll.addEventListener('click', ()=>{ current = DATA[Math.floor(Math.random()*DATA.length)]; renderCurrent(); });
+    $fav.addEventListener('click', ()=>{
+      const idx = favorites.findIndex(f=>f.name===current.name);
+      if(idx>=0) favorites.splice(idx,1); else favorites.unshift(current);
+      favorites = favorites.slice(0, 200);
+      saveFavs();
+      renderCurrent();
+      renderFavs();
+    });
+    $search.addEventListener('input', renderFavs);
+
+    $export.addEventListener('click', ()=>{
+      if(!favorites.length){ alert('没有可导出的收藏。'); return; }
+      const header = ['城市','省份/属性','地理位置','距离/航程','人均GDP','10月平均气温','著名美食','人口','著名景点'];
+      const rows = favorites.map(c=>[
+        c.name, c.province, c.location, c.distance, c.gdp, c.temp.replace('10月：',''), c.food, c.population, c.spot
+      ]);
+      const csv = [header.join(','), ...rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(','))].join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = '收藏城市.csv'; a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // initial render
+    renderCurrent();
+    renderFavs();
+  </script>
+</body>
+</html>
