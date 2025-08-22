@@ -8,7 +8,7 @@
     :root { --bg:#fafbff; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e5e7eb; --accent:#2563eb; }
     *{ box-sizing:border-box }
     body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, "Apple Color Emoji","Segoe UI Emoji"; background:var(--bg); color:var(--ink); }
-    .wrap{ max-width:1000px; margin:0 auto; padding:24px; }
+    .wrap{ max-width:1100px; margin:0 auto; padding:24px; }
     header{ display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:12px; }
     h1{ margin:0; font-size:clamp(22px, 3vw, 28px); }
     p.lead{ color:var(--muted); margin:6px 0 0; }
@@ -20,15 +20,18 @@
     button.ghost{ background:transparent; }
     button:disabled{ opacity:.6; cursor:not-allowed; }
     input{ width:100%; max-width:360px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; }
-    .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px; }
+    .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:12px; }
     .fav{ border:1px dashed var(--line); border-radius:12px; padding:12px; }
     .meta{ color:var(--muted); font-size:14px; }
-    .kvs{ margin:8px 0 0; display:grid; grid-template-columns: 140px 1fr; gap:6px 10px; font-size:14px; }
+    .kvs{ margin:8px 0 0; display:grid; grid-template-columns: 150px 1fr; gap:6px 10px; font-size:14px; }
     .kvs div{ padding:2px 0; }
     .kvs .key{ color:var(--muted); }
     .title{ font-weight:700; font-size:18px; }
     .spacer{ height:8px; }
     footer{ color:var(--muted); font-size:13px; margin-top:18px; }
+    details.spots{ margin-top:8px; }
+    details.spots summary{ cursor:pointer; color:var(--accent); }
+    .spots-list{ margin:6px 0 0; padding-left:18px; }
   </style>
 </head>
 <body>
@@ -47,7 +50,7 @@
 
     <div class="spacer"></div>
 
-    <!-- 新增：快速查找城市（位于“推荐城市”上方） -->
+    <!-- 快速查找城市（推荐卡片上方） -->
     <div class="row card" style="gap:10px; align-items:center;">
       <input id="picker" list="city-list" placeholder="快速查找城市（输入城市名，如：北京、上海、成都）" style="flex:1; max-width:520px;" />
       <datalist id="city-list"></datalist>
@@ -68,10 +71,11 @@
     <h3>收藏</h3>
     <section id="favorites" class="grid" aria-live="polite"></section>
 
-    <footer>提示：以上指标为大致参照，实际数值可能因年份/统计口径有所差异；收藏仅保存在浏览器本地。</footer>
+    <footer>提示：人口为 2020 年第七次全国人口普查“全市常住人口”；酒店均价为经验水平，仅作参考；收藏仅保存在浏览器本地。</footer>
   </div>
 
   <script>
+    // ======= 基础数据（与你现有的一致，人口字段将由 popOf 替换显示） =======
     const DATA = [
       { name: "北京", distance: "约 1,500 公里 / 飞行 2 小时", gdp: "人均GDP：约 ¥180,000", spot: "故宫、长城", temp: "10月：12℃", food: "北京烤鸭", population: "约 2,200 万", province: "直辖市·北京", location: "华北地区" },
       { name: "上海", distance: "约 1,800 公里 / 飞行 2.5 小时", gdp: "人均GDP：约 ¥190,000", spot: "外滩、东方明珠", temp: "10月：19℃", food: "生煎、小笼包", population: "约 2,500 万", province: "直辖市·上海", location: "华东沿海" },
@@ -138,26 +142,254 @@
       { name: "大庆", distance: "约 650 公里 / 飞行 1.5 小时", gdp: "人均GDP：约 ¥130,000", spot: "油田科普园", temp: "10月：7℃", food: "东北菜", population: "约 280 万", province: "黑龙江省", location: "松嫩平原" }
     ];
 
-    // —— 新增：人口（2020七普，全市常住人口）映射与工具函数 ——
-const POP2020 = {
-  "北京": 21893095, "上海": 24870895, "广州": 18676605, "深圳": 17560061, "成都": 20937757,
-  "重庆": 32054159, "天津": 13866009, "武汉": 12326500, "西安": 12952907, "苏州": 12750000,
-  "郑州": 12600574, "杭州": 11936010, "宁波": 9404283, "佛山": 9498863, "东莞": 10466625,
-  "南京": 9314685, "青岛": 10071722, "济南": 9202432, "合肥": 9369881, "沈阳": 9070093,
-  "哈尔滨": 10009854
-};
-function formatPop(n){ if(!n) return "—（待补充）"; const num = Number(n); const w = (num/10000).toFixed(1); return num.toLocaleString('zh-CN') + `（约${w}万人）`; }
-function popOf(name){ return formatPop(POP2020[name]); }
-// —— 以上新增 ——
+    // —— 人口（2020七普，全市常住人口） ——
+    const POP2020 = { "北京": 21893095, "上海": 24870895, "广州": 18676605, "深圳": 17560061, "杭州": 11936010, "成都": 20937757, "重庆": 32054159, "武汉": 12326500, "西安": 12952907, "苏州": 12748262, "南京": 9314685, "天津": 13866009, "郑州": 12600574, "长沙": 10047914, "宁波": 9404283, "厦门": 5163970, "福州": 8291268, "哈尔滨": 10009854, "沈阳": 9070093, "大连": 7450785, "青岛": 10071595, "济南": 9202432, "合肥": 9369881, "昆明": 8460088, "贵阳": 5987018, "南宁": 8741584, "无锡": 7462135, "长春": 9066517, "石家庄": 11235086, "太原": 5303592, "兰州": 4359446, "银川": 2854616, "西宁": 2467837, "呼和浩特": 3445007, "保定": 11437217, "扬州": 4559797, "常州": 5278121, "南通": 7726635, "威海": 2906548, "烟台": 7132193, "嘉兴": 5400868, "温州": 9572903, "惠州": 6042852, "东莞": 10466729, "佛山": 9498863, "珠海": 2439585, "乌鲁木齐": 4054369, "三亚": 1031396, "海口": 2873358, "桂林": 4931137, "张家界": 1526956, "洛阳": 6571799, "开封": 4368830, "南昌": 6256364, "合川(重庆)": 1532598, "秦皇岛": 3146330, "绍兴": 5058648, "舟山": 1179945, "肇庆": 4121478, "中山": 4420291, "鞍山": 3320793, "齐齐哈尔": 4921204, "大庆": 2863840 };
 
-const KEY = "china-travel-favs-v1";
+    // —— 新增：景点简介、酒店均价、最佳季节、住宿区域 ——
+    const SPOT_DESC = {
+      "故宫":"明清两代皇宫，世界文化遗产",
+      "长城":"万里长城代表段多在八达岭、慕田峪",
+      "外滩":"近代万国建筑群，黄浦江畔夜景",
+      "东方明珠":"标志性电视塔，观景平台俯瞰浦江",
+      "西湖":"“人间天堂”，十景遍布湖畔",
+      "灵隐寺":"东晋古刹，与飞来峰石刻相邻",
+      "大熊猫基地":"成都熊猫繁育研究基地，近距离看滚滚",
+      "锦里":"仿古街区，小吃与手作集中",
+      "洪崖洞":"依山而建的吊脚楼群，夜景出片",
+      "解放碑":"重庆地标商圈，夜色璀璨",
+      "黄鹤楼":"江南三大名楼之一，登楼望江",
+      "东湖":"城市内湖，绿道骑行胜地",
+      "兵马俑":"秦始皇陵陪葬坑，震撼史诗级规模",
+      "古城墙":"明代城墙环城，可骑行漫步",
+      "拙政园":"江南园林代表，曲水流觞",
+      "周庄":"中国第一水乡，粉墙黛瓦",
+      "中山陵":"伟人纪念地，林荫大道宁静",
+      "夫子庙":"秦淮河畔，灯影繁华",
+      "意式风情区":"欧式建筑街区，餐厅酒吧林立",
+      "海河":"穿城而过的母亲河，游船夜景",
+      "少林寺":"禅宗祖庭，武术发源地之一",
+      "鼓浪屿":"世界文化遗产，万国建筑与海岛慢生活",
+      "三坊七巷":"福州历史街区，名人故居云集",
+      "冰雪大世界":"冬季冰灯雪雕乐园",
+      "故宫(沈阳)":"清初皇宫，满族文化遗迹",
+      "星海广场":"城市客厅，海滨风光开阔",
+      "滨海路":"山海间自驾与步道",
+      "栈桥":"青岛象征，与中山路老城相连",
+      "崂山":"海上第一名山，道教名胜",
+      "趵突泉":"天下第一泉，趵突三泉涌",
+      "千佛山":"历山古称，俯瞰泉城",
+      "三河古镇":"水系交汇的古镇风貌",
+      "滇池":"高原明珠，环湖骑行看红嘴鸥",
+      "石林":"喀斯特地貌奇观",
+      "甲秀楼":"明代楼阁，南明河畔",
+      "青岩古镇":"黔中石头古城，小吃丰富",
+      "南湖公园":"城市绿肺，夜景宜人",
+      "青秀山":"城市后花园，环山步道",
+      "太湖":"无锡名片，樱花季与鼋头渚",
+      "灵山大佛":"巨型露天佛像与梵宫",
+      "净月潭":"森林公园，四季皆宜",
+      "赵州桥":"隋代石拱桥，工艺精绝",
+      "抱犊寨":"山城古寨，可观太行风光",
+      "晋祠":"晋文化发源地，难老泉著名",
+      "双塔寺":"寺内双塔为城市标志",
+      "黄河铁桥":"中山桥，百年老桥",
+      "五泉山":"兰州名胜，泉潭叠落",
+      "沙湖":"芦苇与沙丘交织的湿地",
+      "西夏王陵":"“东方金字塔”",
+      "青海湖":"中国最大内陆湖，自驾摄影胜地",
+      "塔尔寺":"藏传佛教格鲁派名寺",
+      "大召寺":"呼市古寺，以银佛著称",
+      "昭君博物院":"纪念王昭君和亲史事",
+      "古莲花池":"古典园林风格，池馆相映",
+      "瘦西湖":"湖光塔影，二十四桥明月夜",
+      "中华恐龙园":"恐龙主题乐园",
+      "狼山":"南通名山，寺庙林立",
+      "濠河":"城中水系环绕，夜景秀美",
+      "刘公岛":"甲午海战遗址与博物馆",
+      "蓬莱阁":"八仙过海传说地",
+      "长岛":"海岛风光，夏季避暑",
+      "乌镇":"江南水乡，东西栅各具风味",
+      "雁荡山":"奇峰怪石与瀑布群",
+      "楠溪江":"清澈溪流与古村落",
+      "西湖(惠州)":"城中湖景，步道休闲",
+      "双月湾":"沙滩海湾拍照地",
+      "虎门大桥":"跨珠江口重要通道",
+      "松山湖":"生态科技城，环湖绿道",
+      "祖庙":"岭南古庙，木雕精美",
+      "顺德水乡":"美食与水乡并重",
+      "日月贝":"歌剧院外形地标",
+      "情侣路":"海滨长廊，观港夜景",
+      "天山天池":"雪山环抱的高山湖泊",
+      "亚龙湾":"三亚最清澈海湾之一",
+      "天涯海角":"岩石海景地标",
+      "骑楼老街":"南洋风格骑楼街区",
+      "漓江":"山水甲天下，竹筏漂流",
+      "阳朔":"喀斯特群峰与乡村骑行",
+      "武陵源景区":"砂岩峰林世界遗产",
+      "龙门石窟":"佛教石刻艺术宝库",
+      "清明上河园":"仿北宋市井风貌主题园",
+      "滕王阁":"“落霞与孤鹜齐飞”名楼",
+      "钓鱼城遗址":"古战场遗址，合川名片",
+      "老龙头":"长城入海处",
+      "北戴河":"海滨度假区与候鸟栖息地",
+      "鲁迅故里":"名人故里与古城街巷",
+      "东湖(绍兴)":"水上石景别具一格",
+      "普陀山":"海天佛国，四大佛教名山之一",
+      "七星岩":"喀斯特石灰岩洞与湖景",
+      "孙中山故里":"近现代史迹聚落",
+      "千山":"奇峰怪石与寺庙分布",
+      "扎龙自然保护区":"丹顶鹤保护地",
+      "油田科普园":"了解大庆油田发展史"
+    };
+
+    // 经济型酒店大床房均价（¥/晚，经验值）
+    const PRICE = {"北京":380,"上海":380,"广州":320,"深圳":340,"杭州":320,"成都":280,"重庆":260,"武汉":260,"西安":260,"苏州":300,"南京":300,"天津":260,"郑州":240,"长沙":260,"宁波":280,"厦门":320,"福州":260,"哈尔滨":220,"沈阳":220,"大连":260,"青岛":280,"济南":260,"合肥":240,"昆明":260,"贵阳":220,"南宁":220,"无锡":280,"长春":220,"石家庄":220,"太原":220,"兰州":220,"银川":200,"西宁":200,"呼和浩特":200,"保定":200,"扬州":220,"常州":260,"南通":240,"威海":240,"烟台":240,"嘉兴":240,"温州":240,"惠州":220,"东莞":260,"佛山":240,"珠海":260,"乌鲁木齐":240,"三亚":350,"海口":240,"桂林":240,"张家界":240,"洛阳":220,"开封":200,"南昌":240,"合川(重庆)":200,"秦皇岛":220,"绍兴":240,"舟山":260,"肇庆":200,"中山":220,"鞍山":200,"齐齐哈尔":180,"大庆":200};
+
+    // 最佳旅行季节/月份（经验建议）
+    const SEASON = {
+      "北京":"4-5月、9-10月",
+      "上海":"3-5月、10-11月",
+      "广州":"10-12月、3-4月",
+      "深圳":"10-12月、3-4月",
+      "杭州":"3-5月、10-11月",
+      "成都":"3-5月、9-11月",
+      "重庆":"10-3月（避暑热）",
+      "武汉":"3-5月、10-11月",
+      "西安":"4-5月、9-10月",
+      "苏州":"3-5月、9-11月",
+      "南京":"3-5月、9-11月",
+      "天津":"4-5月、9-10月",
+      "郑州":"4-5月、9-10月",
+      "长沙":"3-5月、10-11月",
+      "宁波":"3-5月、9-11月",
+      "厦门":"10-12月、3-4月",
+      "福州":"10-12月、3-4月",
+      "哈尔滨":"6-8月（避暑）/12-2月（冰雪节）",
+      "沈阳":"5-10月",
+      "大连":"6-9月",
+      "青岛":"6-9月",
+      "济南":"4-5月、9-10月",
+      "合肥":"3-5月、9-11月",
+      "昆明":"全年宜人，以3-5月、9-11月最佳",
+      "贵阳":"6-8月（避暑）",
+      "南宁":"10-12月、2-4月",
+      "无锡":"3-5月、9-11月",
+      "长春":"6-9月",
+      "石家庄":"4-5月、9-10月",
+      "太原":"5-10月",
+      "兰州":"5-10月",
+      "银川":"5-10月",
+      "西宁":"6-9月",
+      "呼和浩特":"5-9月",
+      "保定":"4-5月、9-10月",
+      "扬州":"3-5月、9-11月",
+      "常州":"3-5月、9-11月",
+      "南通":"3-5月、9-11月",
+      "威海":"6-9月",
+      "烟台":"6-9月",
+      "嘉兴":"3-5月、9-11月",
+      "温州":"3-5月、10-11月",
+      "惠州":"10-12月、3-4月",
+      "东莞":"10-12月、3-4月",
+      "佛山":"10-12月、3-4月",
+      "珠海":"10-12月、3-4月",
+      "乌鲁木齐":"6-9月",
+      "三亚":"11-3月",
+      "海口":"11-3月",
+      "桂林":"3-5月、9-11月",
+      "张家界":"4-6月、9-10月",
+      "洛阳":"4-5月（牡丹花季）、9-10月",
+      "开封":"4-5月、9-10月",
+      "南昌":"3-5月、10-11月",
+      "合川(重庆)":"10-3月",
+      "秦皇岛":"6-9月",
+      "绍兴":"3-5月、9-11月",
+      "舟山":"5-9月",
+      "肇庆":"10-12月、3-4月",
+      "中山":"10-12月、3-4月",
+      "鞍山":"5-9月",
+      "齐齐哈尔":"6-8月",
+      "大庆":"6-8月"
+    };
+
+    // 住宿推荐区域（靠近景点/交通，适合游客）
+    const AREAS = {
+      "北京":["王府井/东华门","前门/天安门","三里屯/国贸"],
+      "上海":["外滩/南京东路-人民广场","陆家嘴","新天地-淮海路"],
+      "广州":["天河/珠江新城","北京路-越秀","上下九-荔湾"],
+      "深圳":["福田会展中心","深圳湾/后海","罗湖口岸-东门"],
+      "杭州":["西湖湖滨","武林广场","钱江新城"],
+      "成都":["春熙路/太古里","宽窄巷子附近","高新区环球中心"],
+      "重庆":["解放碑-洪崖洞","观音桥","南滨路"],
+      "武汉":["江汉路步行街","楚河汉街","汉口火车站商圈"],
+      "西安":["钟鼓楼/回民街","大雁塔/曲江","小寨商圈"],
+      "苏州":["观前街/平江路","金鸡湖/园区","石路"],
+      "南京":["新街口","夫子庙秦淮","玄武湖/鼓楼"],
+      "天津":["滨江道-和平路","意式风情区","小白楼"] ,
+      "郑州":["二七广场","郑东新区CBD","高铁东站"],
+      "长沙":["五一广场/IFS","太平街/坡子街","橘子洲/岳麓"],
+      "宁波":["天一广场","老外滩","东部新城"],
+      "厦门":["中山路步行街","鼓浪屿码头附近","曾厝垵"],
+      "福州":["三坊七巷/东街口","会展-万象城","火车站周边"],
+      "哈尔滨":["中央大街/索菲亚","松北冰雪大世界","哈站商圈"],
+      "沈阳":["太原街","中街/故宫","奥体-万象城"],
+      "大连":["中山广场","青泥洼桥","星海广场"],
+      "青岛":["五四广场/奥帆中心","中山路/栈桥","八大关"],
+      "济南":["泉城路/趵突泉","大明湖","奥体中心"],
+      "合肥":["政务区/万象城","三里庵","滨湖新区"],
+      "昆明":["南屏街/正义坊","翠湖","官渡广场"],
+      "贵阳":["喷水池/甲秀楼","观山湖区","会展中心"],
+      "南宁":["朝阳广场","东盟商务区","青秀山周边"],
+      "无锡":["南长街/南禅寺","太湖鼋头渚","苏宁广场"],
+      "长春":["重庆路/桂林路","人民广场","净月潭"],
+      "石家庄":["勒泰中心/北国","万象城","火车站商圈"],
+      "太原":["迎泽大街/柳巷","长风街/万象城","太原南站"],
+      "兰州":["正宁路夜市/中心","中山桥/黄河母亲","西站商圈"],
+      "银川":["鼓楼老城","阅海湾/万象城","火车站周边"],
+      "西宁":["莫家街/水井巷","海湖新区","火车站"],
+      "呼和浩特":["中山西路","海亮广场","赛罕区万达"],
+      "保定":["朝阳大街/万博","高新区","古莲花池周边"],
+      "扬州":["瘦西湖东门","东关街","文昌阁/淮海路"],
+      "常州":["恐龙园","吾悦广场","武进湖塘"],
+      "南通":["崇川CBD","南大街","开发区"],
+      "威海":["国际海水浴场","幸福门/九龙城","火车站周边"],
+      "烟台":["滨海广场","芝罘区/南大街","火车站周边"],
+      "嘉兴":["南湖","中山路商圈","高铁南站"],
+      "温州":["五马街","鹿城区中心","瓯海万象城"],
+      "惠州":["西湖/步行街","惠州南站","江北CBD"],
+      "东莞":["东城万达/世博","厚街展馆","南城鸿福路"],
+      "佛山":["祖庙/岭南天地","千灯湖/桂城","顺德大良"],
+      "珠海":["情侣路/海滨泳场","拱北口岸","香洲老城"],
+      "乌鲁木齐":["红山/友好商圈","中山路","高铁站片区"],
+      "三亚":["三亚湾","大东海","亚龙湾"],
+      "海口":["骑楼老街/解放西","万绿园/国贸","美兰站周边"],
+      "桂林":["两江四湖/正阳步行街","象鼻山","阳朔西街(转住)"],
+      "张家界":["武陵源景区门口","天门山索道站","市中心步行街"],
+      "洛阳":["老城丽景门/洛邑古城","王城公园/国购","龙门高铁站"],
+      "开封":["鼓楼/清明上河园周边","包公祠/大梁门","金明广场"],
+      "南昌":["八一广场/中山路","红谷滩万达","滕王阁片区"],
+      "合川(重庆)": ["合阳城/文峰古街","区府体育馆","涪江滨江"]
+    };
+
+    function formatPop(n){ if(!n) return "—（待补充）"; const num = Number(n); return num.toLocaleString('zh-CN') + `（约${(num/10000).toFixed(1)}万人）`; }
+    const popOf = name => formatPop(POP2020[name]);
+    const priceOf = name => PRICE[name] ? `约 ¥${PRICE[name]}/晚` : '—';
+    const seasonOf = name => SEASON[name] || '10-11月（通用宜游）';
+    const areasOf = name => (AREAS[name] || ['市中心/火车站周边','景区就近']).join('、');
+
+    function spotList(city){
+      const raw = (city.spot||'').split('、').map(s=>s.trim()).filter(Boolean);
+      if(!raw.length) return '<em>暂无</em>';
+      return '<ul class="spots-list">' + raw.map(n=>`<li><b>${n}</b>：${SPOT_DESC[n]||'热门地标，适合首次到访打卡'}</li>`).join('') + '</ul>';
+    }
+
+    const KEY = "china-travel-favs-v1";
     const $current = document.getElementById('current');
     const $favs = document.getElementById('favorites');
     const $roll = document.getElementById('btn-roll');
     const $fav = document.getElementById('btn-fav');
     const $export = document.getElementById('btn-export');
     const $search = document.getElementById('search');
-    // 新增：搜索选择控件
     const $picker = document.getElementById('picker');
     const $pickBtn = document.getElementById('btn-pick');
     const $clearBtn = document.getElementById('btn-clear');
@@ -165,9 +397,7 @@ const KEY = "china-travel-favs-v1";
 
     let current = DATA[Math.floor(Math.random()*DATA.length)];
     let favorites = [];
-
     try { const raw = localStorage.getItem(KEY); if (raw) favorites = JSON.parse(raw); } catch {}
-
     function saveFavs(){ try{ localStorage.setItem(KEY, JSON.stringify(favorites)); }catch{} }
 
     function renderCurrent(){
@@ -182,9 +412,13 @@ const KEY = "china-travel-favs-v1";
           <div class="key">10月平均气温</div><div>${current.temp.replace('10月：','')}</div>
           <div class="key">著名美食</div><div>${current.food}</div>
           <div class="key">人口（2020普查，全市常住人口）</div><div>${popOf(current.name)}</div>
+          <div class="key">经济酒店均价</div><div>${priceOf(current.name)}</div>
+          <div class="key">最佳旅行季节</div><div>${seasonOf(current.name)}</div>
+          <div class="key">住宿推荐区域</div><div>${areasOf(current.name)}</div>
           <div class="key">省份/属性</div><div>${current.province}</div>
           <div class="key">地理位置</div><div>${current.location}</div>
-        </div>`;
+        </div>
+        <details class="spots"><summary>展开景点简介</summary>${spotList(current)}</details>`;
     }
 
     function renderFavs(){
@@ -200,15 +434,18 @@ const KEY = "china-travel-favs-v1";
             <div class="key">人均GDP</div><div>${c.gdp}</div>
             <div class="key">10月</div><div>${c.temp.replace('10月：','')}</div>
             <div class="key">美食</div><div>${c.food}</div>
-            <div class="key">人口（2020普查，全市常住人口）</div><div>${popOf(c.name)}</div>
+            <div class="key">人口</div><div>${popOf(c.name)}</div>
+            <div class="key">均价</div><div>${priceOf(c.name)}</div>
+            <div class="key">季节</div><div>${seasonOf(c.name)}</div>
+            <div class="key">住宿</div><div>${areasOf(c.name)}</div>
             <div class="key">景点</div><div>${c.spot}</div>
           </div>
+          <details class="spots"><summary>景点简介</summary>${spotList(c)}</details>
           <div class="row" style="margin-top:8px">
             <button data-remove="${c.name}">删除</button>
           </div>
         </div>
       `).join('');
-      // bind remove
       $favs.querySelectorAll('button[data-remove]').forEach(btn=>{
         btn.addEventListener('click', ()=>{
           const name = btn.getAttribute('data-remove');
@@ -219,6 +456,16 @@ const KEY = "china-travel-favs-v1";
         });
       });
     }
+
+    function selectCityByName(name){
+      if(!name) return;
+      const exact = DATA.find(c => c.name === name.trim());
+      const fuzzy = exact || DATA.find(c => c.name.includes(name.trim()));
+      if(fuzzy){ current = fuzzy; renderCurrent(); }
+      else { alert('未找到该城市，请检查输入（例如：北京、上海、成都）'); }
+    }
+
+    (function fillDatalist(){ if(!$cityList) return; $cityList.innerHTML = DATA.map(c => `<option value="${c.name}"></option>`).join(''); })();
 
     $roll.addEventListener('click', ()=>{ current = DATA[Math.floor(Math.random()*DATA.length)]; renderCurrent(); });
     $fav.addEventListener('click', ()=>{
@@ -231,44 +478,30 @@ const KEY = "china-travel-favs-v1";
     });
     $search.addEventListener('input', renderFavs);
 
+    $picker.addEventListener('keydown', (e) => { if(e.key === 'Enter'){ selectCityByName($picker.value); } });
+    $pickBtn.addEventListener('click', () => selectCityByName($picker.value));
+    $clearBtn.addEventListener('click', () => { $picker.value = ''; $picker.focus(); });
+
     $export.addEventListener('click', ()=>{
       if(!favorites.length){ alert('没有可导出的收藏。'); return; }
-      const header = ['城市','省份/属性','地理位置','距离/航程','人均GDP','10月平均气温','著名美食','人口','著名景点'];
-      const rows = favorites.map(c=>[
-        c.name, c.province, c.location, c.distance, c.gdp, c.temp.replace('10月：',''), c.food, popOf(c.name), c.spot
-      ]);
+      const header = ['城市','省份/属性','地理位置','距离/航程','人均GDP','10月平均气温','著名美食','人口（2020普查，全市常住人口）','经济酒店均价(¥/晚)','最佳旅行季节','住宿推荐区域','著名景点','景点简介(合并)'];
+      const rows = favorites.map(c=>{
+        const names = (c.spot||'').split('、').map(s=>s.trim()).filter(Boolean);
+        const descs = names.map(n=>`${n}:${SPOT_DESC[n]||'热门地标'}`).join(' | ');
+        return [
+          c.name, c.province, c.location, c.distance, c.gdp, c.temp.replace('10月：',''), c.food,
+          popOf(c.name), PRICE[c.name]||'', seasonOf(c.name), areasOf(c.name), c.spot, descs
+        ];
+      });
       const csv = [header.join(','), ...rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(','))].join('\n');
       const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = '收藏城市.csv'; a.click();
+      a.href = url; a.download = '收藏城市_扩展信息.csv'; a.click();
       URL.revokeObjectURL(url);
     });
 
-    // 事件：选择城市
-    function selectCityByName(name){
-      if(!name) return;
-      // 优先精确匹配，其次包含匹配
-      const exact = DATA.find(c => c.name === name.trim());
-      const fuzzy = exact || DATA.find(c => c.name.includes(name.trim()));
-      if(fuzzy){ current = fuzzy; renderCurrent(); }
-      else { alert('未找到该城市，请检查输入（例如：北京、上海、成都）'); }
-    }
-
-    // 填充 datalist
-    (function fillDatalist(){
-      if(!$cityList) return;
-      $cityList.innerHTML = DATA.map(c => `<option value="${c.name}"></option>`).join('');
-    })();
-
-    // 绑定选择按钮
-    $pickBtn.addEventListener('click', () => selectCityByName($picker.value));
-    $clearBtn.addEventListener('click', () => { $picker.value = ''; $picker.focus(); });
-
-    // 回车直接选择
-    $picker.addEventListener('keydown', (e) => { if(e.key === 'Enter'){ selectCityByName($picker.value); } });
-
-    // initial render
+    // 初始渲染
     renderCurrent();
     renderFavs();
   </script>
