@@ -47,6 +47,16 @@
 
     <div class="spacer"></div>
 
+    <!-- 新增：快速查找城市（位于“推荐城市”上方） -->
+    <div class="row card" style="gap:10px; align-items:center;">
+      <input id="picker" list="city-list" placeholder="快速查找城市（输入城市名，如：北京、上海、成都）" style="flex:1; max-width:520px;" />
+      <datalist id="city-list"></datalist>
+      <button id="btn-pick" class="primary">选择城市</button>
+      <button id="btn-clear" class="ghost">清空</button>
+    </div>
+
+    <div class="spacer"></div>
+
     <section id="current" class="card" aria-live="polite"></section>
 
     <div class="spacer"></div>
@@ -128,13 +138,30 @@
       { name: "大庆", distance: "约 650 公里 / 飞行 1.5 小时", gdp: "人均GDP：约 ¥130,000", spot: "油田科普园", temp: "10月：7℃", food: "东北菜", population: "约 280 万", province: "黑龙江省", location: "松嫩平原" }
     ];
 
-    const KEY = "china-travel-favs-v1";
+    // —— 新增：人口（2020七普，全市常住人口）映射与工具函数 ——
+const POP2020 = {
+  "北京": 21893095, "上海": 24870895, "广州": 18676605, "深圳": 17560061, "成都": 20937757,
+  "重庆": 32054159, "天津": 13866009, "武汉": 12326500, "西安": 12952907, "苏州": 12750000,
+  "郑州": 12600574, "杭州": 11936010, "宁波": 9404283, "佛山": 9498863, "东莞": 10466625,
+  "南京": 9314685, "青岛": 10071722, "济南": 9202432, "合肥": 9369881, "沈阳": 9070093,
+  "哈尔滨": 10009854
+};
+function formatPop(n){ if(!n) return "—（待补充）"; const num = Number(n); const w = (num/10000).toFixed(1); return num.toLocaleString('zh-CN') + `（约${w}万人）`; }
+function popOf(name){ return formatPop(POP2020[name]); }
+// —— 以上新增 ——
+
+const KEY = "china-travel-favs-v1";
     const $current = document.getElementById('current');
     const $favs = document.getElementById('favorites');
     const $roll = document.getElementById('btn-roll');
     const $fav = document.getElementById('btn-fav');
     const $export = document.getElementById('btn-export');
     const $search = document.getElementById('search');
+    // 新增：搜索选择控件
+    const $picker = document.getElementById('picker');
+    const $pickBtn = document.getElementById('btn-pick');
+    const $clearBtn = document.getElementById('btn-clear');
+    const $cityList = document.getElementById('city-list');
 
     let current = DATA[Math.floor(Math.random()*DATA.length)];
     let favorites = [];
@@ -154,7 +181,7 @@
           <div class="key">著名景点</div><div>${current.spot}</div>
           <div class="key">10月平均气温</div><div>${current.temp.replace('10月：','')}</div>
           <div class="key">著名美食</div><div>${current.food}</div>
-          <div class="key">人口</div><div>${current.population}</div>
+          <div class="key">人口（2020普查，全市常住人口）</div><div>${popOf(current.name)}</div>
           <div class="key">省份/属性</div><div>${current.province}</div>
           <div class="key">地理位置</div><div>${current.location}</div>
         </div>`;
@@ -173,7 +200,7 @@
             <div class="key">人均GDP</div><div>${c.gdp}</div>
             <div class="key">10月</div><div>${c.temp.replace('10月：','')}</div>
             <div class="key">美食</div><div>${c.food}</div>
-            <div class="key">人口</div><div>${c.population}</div>
+            <div class="key">人口（2020普查，全市常住人口）</div><div>${popOf(c.name)}</div>
             <div class="key">景点</div><div>${c.spot}</div>
           </div>
           <div class="row" style="margin-top:8px">
@@ -208,7 +235,7 @@
       if(!favorites.length){ alert('没有可导出的收藏。'); return; }
       const header = ['城市','省份/属性','地理位置','距离/航程','人均GDP','10月平均气温','著名美食','人口','著名景点'];
       const rows = favorites.map(c=>[
-        c.name, c.province, c.location, c.distance, c.gdp, c.temp.replace('10月：',''), c.food, c.population, c.spot
+        c.name, c.province, c.location, c.distance, c.gdp, c.temp.replace('10月：',''), c.food, popOf(c.name), c.spot
       ]);
       const csv = [header.join(','), ...rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(','))].join('\n');
       const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
@@ -217,6 +244,29 @@
       a.href = url; a.download = '收藏城市.csv'; a.click();
       URL.revokeObjectURL(url);
     });
+
+    // 事件：选择城市
+    function selectCityByName(name){
+      if(!name) return;
+      // 优先精确匹配，其次包含匹配
+      const exact = DATA.find(c => c.name === name.trim());
+      const fuzzy = exact || DATA.find(c => c.name.includes(name.trim()));
+      if(fuzzy){ current = fuzzy; renderCurrent(); }
+      else { alert('未找到该城市，请检查输入（例如：北京、上海、成都）'); }
+    }
+
+    // 填充 datalist
+    (function fillDatalist(){
+      if(!$cityList) return;
+      $cityList.innerHTML = DATA.map(c => `<option value="${c.name}"></option>`).join('');
+    })();
+
+    // 绑定选择按钮
+    $pickBtn.addEventListener('click', () => selectCityByName($picker.value));
+    $clearBtn.addEventListener('click', () => { $picker.value = ''; $picker.focus(); });
+
+    // 回车直接选择
+    $picker.addEventListener('keydown', (e) => { if(e.key === 'Enter'){ selectCityByName($picker.value); } });
 
     // initial render
     renderCurrent();
